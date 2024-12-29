@@ -4,8 +4,7 @@ import { Mail, Phone, ChevronRight } from 'lucide-react';
 const Footer = () => {
     const companyLinks = [
         { name: "Home", href: "#home" },
-        { name: "About Us", href: "#about" },
-        { name: "Delivery", href: "#delivery" },
+        { name: "About Us", href: "/about" },
         { name: "Privacy Policy", href: "#privacy" }
     ];
     const currentYear = new Date().getFullYear();
