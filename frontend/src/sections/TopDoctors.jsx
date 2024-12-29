@@ -11,7 +11,6 @@ const TopDoctors = () => {
             <h1 className='md:text-4xl text-3xl font-medium text-center'>
                 Top Doctors to Book
             </h1>
-
             <p className='max-w-xs sm:max-w-md md:max-w-xl text-center text-sm'>
                 Simply browse through our extensive list of trusted doctors,
                 schedule your appointment hassle-free.
