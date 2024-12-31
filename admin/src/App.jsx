@@ -1,7 +1,12 @@
-export default function App() {
+import Login from "./pages/Login.jsx";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+const App = () => {
     return (
-        <h1 className="text-3xl font-bold underline">
-            Hello world!
-        </h1>
+        <div>
+            <Login/>
+            <ToastContainer />
+        </div>
     )
 }
+export default App

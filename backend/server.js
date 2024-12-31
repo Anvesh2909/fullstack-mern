@@ -11,7 +11,6 @@ app.use(cors());
 app.use(express.json());
 //api endpoints
 app.use('/api/admin', adminRouter);
-
-app.listen(4000, () => {
-    console.log("Server is running" + ` http://localhost:4000`);
+app.listen(5000, () => {
+    console.log("Server is running" + ` http://localhost:5000`);
 })
