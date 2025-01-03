@@ -31,7 +31,6 @@ const TopDoctors = () => {
                                 alt={item.name}
                             />
                         </div>
-
                         <div className='p-3 sm:p-4 flex flex-col gap-1'>
                             <div className='flex items-center gap-2 text-xs sm:text-sm text-green-500'>
                                 <span className='w-2 h-2 bg-green-500 rounded-full'></span>
