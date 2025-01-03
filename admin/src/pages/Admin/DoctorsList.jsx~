@@ -1,0 +1,10 @@
+import React, {useContext} from 'react'
+import {AdminContext} from "../../context/AdminContext.jsx";
+
+const DoctorsList = () => {
+    const [doctors, token, getAllDoctors] = useContext(AdminContext);
+    return (
+        <div>DoctorsList</div>
+    )
+}
+export default DoctorsList;

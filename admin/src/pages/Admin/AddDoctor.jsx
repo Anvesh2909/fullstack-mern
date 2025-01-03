@@ -1,10 +1,9 @@
-import React, {useContext, useState} from 'react';
+import {useContext, useState} from 'react';
 import { assets } from "../../assets/assets.js";
 import { Mail, Book, Wallet, GraduationCap, MapPin, User, Briefcase, FileText } from 'lucide-react';
 import {AdminContext} from "../../context/AdminContext.jsx";
 import {toast} from "react-toastify";
 import axios from "axios";
-
 const AddDoctor = () => {
     const specialities = [
         "General Physician",
@@ -65,12 +64,12 @@ const AddDoctor = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            console.log('1. Token from context:', token);
-            console.log('2. Backend URL:', backendUrl);
-            console.log('3. Doctor Data:', doctorData);
             if(!doctorData.image) {
                 return toast.error('Image not selected');
             }
+
+            // Format address as a single string
+            const formattedAddress = `${doctorData.address.line1}${doctorData.address.line2 ? ', ' + doctorData.address.line2 : ''}`;
 
             const formData = new FormData();
             formData.append('image', doctorData.image);
@@ -82,15 +81,8 @@ const AddDoctor = () => {
             formData.append('experience', doctorData.experience);
             formData.append('about', doctorData.about);
             formData.append('fees', doctorData.fees);
-            formData.append('address', JSON.stringify({
-                line1: doctorData.address.line1,
-                line2: doctorData.address.line2
-            }));
-            console.log('4. FormData entries:');
-            for (let pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
-            }
-            console.log('5. Making API request...');
+            formData.append('address', formattedAddress);
+
             const response = await axios.post(
                 `${backendUrl}/api/admin/add-doctor`,
                 formData,
@@ -101,8 +93,8 @@ const AddDoctor = () => {
                     }
                 }
             );
-
-            if(response.data.success) {
+            console.log(response);
+            if(response.status===200) {
                 toast.success(response.data.message);
                 setDoctorData({
                     name: "",
@@ -120,17 +112,17 @@ const AddDoctor = () => {
                     image: null
                 });
             }
-            console.log('6. API Response:', response.data);
         } catch (error) {
-            console.log('7. Error details:', {
-                message: error.message,
-                response: error.response?.data,
-                status: error.response?.status
-            });
-            toast.error(error.response?.data?.message || 'Something went wrong');
+            if (error.response?.data?.message === "A doctor with this email already exists") {
+                toast.error("This email is already registered. Please use a different email.");
+            } else {
+                toast.error(error.response?.data?.message || 'Something went wrong');
+            }
+            console.error('Error:', error.response?.data || error.message);
         }
     };
 
+    // Rest of the component remains the same...
     const renderField = (label, name, type = "text", placeholder = "") => {
         if (name === "speciality") {
             return (
@@ -297,5 +289,4 @@ const AddDoctor = () => {
         </div>
     );
 };
-
 export default AddDoctor;

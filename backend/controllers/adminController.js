@@ -6,12 +6,14 @@ import jwt from "jsonwebtoken";
 
 //add doctor
 const addDoctor = async (req, res) => {
-    try{
-        const {name,email,password,speciality,degree,experience,about,fees,address} = req.body;
+    try {
+        const {name, email, password, speciality, degree, experience, about, fees, address} = req.body;
         const imageFile = req.file;
+
         if(!name || !email || !password || !speciality || !degree || !experience || !about || !fees || !address || !imageFile){
             return res.status(400).json({message:"All fields are required"});
         }
+
         //validation
         if(!validator.isEmail(email)){
             return res.status(400).json({message:"Invalid email"});
@@ -19,31 +21,47 @@ const addDoctor = async (req, res) => {
         if(password.length<8){
             return res.status(400).json({message:"Password must be at least 8 characters"});
         }
+
         //hashing
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         //upload
-        const imageUpload = await cloudinary.uploader.upload(imageFile.path,{resource_type:"image"});
+        const imageUpload = await cloudinary.uploader.upload(imageFile.path, {resource_type:"image"});
         const imageUrl = imageUpload.secure_url;
+
+        // Handle address - ensure it's stored as a string
+        let formattedAddress = address;
+        if (typeof address === 'object') {
+            formattedAddress = JSON.stringify(address);
+        } else if (typeof address === 'string') {
+            // If it's already a string, don't try to parse and stringify it again
+            formattedAddress = address;
+        }
+
         const doctorData = {
             name,
             email,
-            password:hashedPassword,
+            password: hashedPassword,
             speciality,
             degree,
             experience,
             about,
             fees,
-            address:JSON.parse(address),
-            image:imageUrl,
-            date:Date.now(),
+            address: formattedAddress,  // Use the formatted address
+            image: imageUrl,
+            date: Date.now(),
         }
+
         const doctor = await doctorModel.create(doctorData);
-        return res.status(200).json({message:"Doctor added successfully",doctor});
-    }catch (e){
+        return res.status(200).json({message: "Doctor added successfully", doctor});
+    } catch (e) {
         console.log("Error "+ e);
-        res.json({success:false,message:"Something went wrong"});
+        return res.status(400).json({
+            success: false,
+            message: "Something went wrong",
+            error: e.message
+        });
     }
 }
 
@@ -68,4 +86,32 @@ const loginAdmin = async (req,res) => {
         res.json({success:false,message:"Something went wrong"});
     }
 }
-export {addDoctor,loginAdmin};
+const allDoctors = async (req,res)=>{
+    try{
+        const doctors = await doctorModel.find({}).select('-password');
+        res.json({success:true,doctors});
+    }catch (e){
+        console.log(e);
+        res.json({success:false,message:e.message})
+    }
+}
+const toggleDoctorAvailability = async (req, res) => {
+    try {
+        const { doctorId, status } = req.body;
+        const doctor = await doctorModel.findByIdAndUpdate(
+            doctorId,
+            { isAvailable: status },
+            { new: true }
+        );
+
+        if (!doctor) {
+            return res.json({ success: false, message: 'Doctor not found' });
+        }
+
+        res.json({ success: true, doctor });
+    } catch (e) {
+        console.log(e);
+        res.json({ success: false, message: e.message });
+    }
+};
+export {addDoctor,loginAdmin,allDoctors,toggleDoctorAvailability};
