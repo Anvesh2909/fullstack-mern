@@ -1,11 +1,12 @@
 import { assets } from "../assets/assets_frontend/assets.js";
 import { NavLink, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import {useContext, useState} from "react";
+import {AppContext} from "../context/AppContext.jsx";
 
 const Navbar = () => {
     const [activeIdx, setActiveIdx] = useState(0);
     const [showMenu, setShowMenu] = useState(false);
-    const [token, setToken] = useState(true);
+    const {token,setToken} = useContext(AppContext);
     const navigate = useNavigate();
 
     const navItems = [
@@ -14,7 +15,10 @@ const Navbar = () => {
         { label: "About", path: "/about" },
         { label: "Contact", path: "/contact" },
     ];
-
+    const logout = () =>{
+        localStorage.removeItem('token');
+        setToken('');
+    }
     const handleNavClick = (index) => {
         setActiveIdx(index);
         setShowMenu(false);
@@ -69,7 +73,7 @@ const Navbar = () => {
                                     </p>
                                     <hr className="my-1"/>
                                     <p
-                                        onClick={() => {setToken(false)}}
+                                        onClick={logout}
                                         className='text-red-500 hover:text-red-600 cursor-pointer p-2 rounded-md hover:bg-gray-50'
                                     >
                                         Logout

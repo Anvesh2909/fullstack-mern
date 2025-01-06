@@ -10,9 +10,12 @@ import About from "./sections/About.jsx";
 import SpecialityMenu from "./components/SpecialityMenu.jsx";
 import Doctors from "./sections/Doctors.jsx";
 import Contact from "./sections/Contact.jsx";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 const App = () => {
     return (
         <div className="mx-4 sm:mx-[10%]">
+            <ToastContainer/>
             <Navbar />
             <Routes>
                 <Route path="/" element={<Home />} />
