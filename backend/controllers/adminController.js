@@ -13,8 +13,6 @@ const addDoctor = async (req, res) => {
         if(!name || !email || !password || !speciality || !degree || !experience || !about || !fees || !address || !imageFile){
             return res.status(400).json({message:"All fields are required"});
         }
-
-        //validation
         if(!validator.isEmail(email)){
             return res.status(400).json({message:"Invalid email"});
         }
@@ -95,23 +93,4 @@ const allDoctors = async (req,res)=>{
         res.json({success:false,message:e.message})
     }
 }
-const toggleDoctorAvailability = async (req, res) => {
-    try {
-        const { doctorId, status } = req.body;
-        const doctor = await doctorModel.findByIdAndUpdate(
-            doctorId,
-            { isAvailable: status },
-            { new: true }
-        );
-
-        if (!doctor) {
-            return res.json({ success: false, message: 'Doctor not found' });
-        }
-
-        res.json({ success: true, doctor });
-    } catch (e) {
-        console.log(e);
-        res.json({ success: false, message: e.message });
-    }
-};
-export {addDoctor,loginAdmin,allDoctors,toggleDoctorAvailability};
+export {addDoctor,loginAdmin,allDoctors};

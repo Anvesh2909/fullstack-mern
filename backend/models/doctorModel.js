@@ -11,7 +11,7 @@ const doctorSchema = new Schema({
     about: {type: String, required: true},
     fees: {type: Number, required: true},
     address: {type: String, required: true},
-    available: {type: String, default:true},
+    available: {type: Boolean, default:true},
     date: {type: Date, required: true},
     slots_booked: {type:Object, default:{}}
 },{minimize:false});
