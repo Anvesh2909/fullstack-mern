@@ -100,4 +100,11 @@ const updateProfile = async (req, res) => {
         });
     }
 };
+const bookAppointment = async (req, res) => {
+    try{
+
+    }catch (e) {
+        console.log(e);
+    }
+}
 export {registerUser,loginUser,getProfile, updateProfile};

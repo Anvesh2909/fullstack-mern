@@ -8,19 +8,17 @@ const Navbar = () => {
     const [showMenu, setShowMenu] = useState(false);
     const { token, setToken, userData, loadUserData } = useContext(AppContext);
     const navigate = useNavigate();
-
     const navItems = [
         { label: "Home", path: "/" },
         { label: "All Doctors", path: "/doctors" },
         { label: "About", path: "/about" },
         { label: "Contact", path: "/contact" },
     ];
-
     useEffect(() => {
         if (token && !userData) {
             loadUserData();
         }
-    }, [token]);
+    }, [loadUserData, token, userData]);
 
     const logout = () => {
         localStorage.removeItem('token');
@@ -165,5 +163,4 @@ const Navbar = () => {
         </div>
     );
 };
-
 export default Navbar;

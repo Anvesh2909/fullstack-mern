@@ -10,7 +10,7 @@ const MyProfile = () => {
     const [imageFile, setImageFile] = useState(null);
     useEffect(() => {
         loadUserData();
-    }, [loadUserData, token]);
+    }, [token]);
     const handleChange = (e) => {
         const { name, value } = e.target;
         if (name.includes('.')) {
@@ -221,5 +221,4 @@ const MyProfile = () => {
         </div>
     );
 };
-
 export default MyProfile;
