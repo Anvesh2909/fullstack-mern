@@ -126,7 +126,7 @@ const bookAppointment = async (req, res) => {
             });
         }
 
-        const userData = await userModel.findById(userId).select('-password');
+        const userData = await userModel.findById(userId);
         if (!userData) {
             return res.status(404).json({
                 success: false,

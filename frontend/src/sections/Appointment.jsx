@@ -1,22 +1,87 @@
 import { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import { AppContext } from "../context/AppContext.jsx";
 import { assets } from "../assets/assets_frontend/assets.js";
 import RelatedDoctors from "../components/RelatedDoctors.jsx";
+import {toast} from "react-toastify";
+import axios from "axios";
 const Appointment = () => {
     const { docId } = useParams();
-    const { doctors } = useContext(AppContext);
+    const { doctors,token,backendUrl,getDoctorData } = useContext(AppContext);
     const [docInfo, setDocInfo] = useState(null);
     const [docSlots, setDocSlots] = useState([]);
     const [loadingSlots, setLoadingSlots] = useState(true);
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [selectedSlot, setSelectedSlot] = useState(null);
-
+    const navigate = useNavigate();
     const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
     const fetchDoctor = () => {
         const doc = doctors.find((doctor) => doctor._id === docId);
         setDocInfo(doc || null);
+    };
+    const bookAppointment = async () => {
+        if (!token) {
+            toast.warn('Login to book an appointment');
+            return navigate('/login');
+        }
+
+        if (!selectedSlot) {
+            toast.warn('Please select a time slot');
+            return;
+        }
+
+        try {
+            const selectedSlotData = docSlots.find(slot =>
+                slot.date === selectedDate.toISOString().split("T")[0] &&
+                slot.time === selectedSlot
+            );
+
+            if (!selectedSlotData) {
+                toast.error('Invalid slot selection');
+                return;
+            }
+
+            const date = new Date(selectedDate);
+            const day = date.getDate().toString().padStart(2, '0');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const year = date.getFullYear();
+            const slotDate = `${day}_${month}_${year}`;
+            const slotTime = selectedSlot;
+
+            const response = await axios.post(backendUrl + '/api/user/book-appointment',
+                {
+                    userId: token,
+                    docId,
+                    date: slotDate,
+                    time: slotTime
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        utoken: token
+                    }
+                }
+            );
+
+            if (response.data.success) {
+                toast.success('Appointment booked successfully');
+                await getDoctorData();
+                navigate('/myappointments');
+            } else {
+                toast.error(response.data.message || 'Failed to book appointment');
+            }
+
+        } catch (error) {
+            console.error('Error booking appointment:', error);
+            if (error.response?.status === 400) {
+                toast.error(error.response.data.message || 'Invalid appointment request');
+            } else if (error.response?.status === 404) {
+                toast.error(error.response.data.message || 'Doctor or user not found');
+            } else {
+                toast.error('Failed to book appointment. Please try again.');
+            }
+        }
     };
 
     const getAvailableSlots = () => {
@@ -178,7 +243,7 @@ const Appointment = () => {
             </div>
 
             <div className="flex mt-8">
-                <button className="bg-primary text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
+                <button onClick={bookAppointment} className="bg-primary text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
                     Book Appointment
                 </button>
             </div>
