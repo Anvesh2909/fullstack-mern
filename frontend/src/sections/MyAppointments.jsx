@@ -1,13 +1,16 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from "../context/AppContext.jsx";
-import { MapPin, Phone, Calendar, Clock } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const MyAppointments = () => {
     const { backendUrl, token } = useContext(AppContext);
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const navigate = useNavigate();
 
     const getAppointments = async () => {
         try {
@@ -18,17 +21,128 @@ const MyAppointments = () => {
                     utoken: token
                 }
             });
-
             if (data.success) {
-                setAppointments(data.appointments.reverse());
+                setAppointments([...data.appointments].reverse());
             } else {
                 toast.error(data.message || 'Failed to fetch appointments');
             }
         } catch (error) {
-            console.error('Error fetching appointments:', error);
             toast.error(error.response?.data?.message || 'Failed to load appointments');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const cancelAppointment = async (appointmentId) => {
+        setIsProcessing(true);
+        try {
+            const { data } = await axios.post(
+                `${backendUrl}/api/user/cancel-appointment`,
+                { appointmentId },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        utoken: token
+                    }
+                }
+            );
+
+            if (data.success) {
+                toast.success(data.message || 'Appointment cancelled successfully');
+                await getAppointments();
+            } else {
+                toast.error(data.message || 'Failed to cancel appointment');
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to cancel appointment');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const rK = import.meta.env.VITE_RAZORPAY_KEY_ID;
+
+    const initPayment = (order) => {
+        if (!window.Razorpay) {
+            toast.error("Razorpay SDK is not loaded. Please try again later.");
+            return;
+        }
+
+        const options = {
+            key: rK,
+            amount: order.amount,
+            currency: order.currency,
+            name: "Prescripto",
+            description: "Doctor Consultation Payment",
+            order_id: order.id,
+            receipt: order.receipt,
+            handler: async (response) => {
+                try {
+                    setIsProcessing(true);
+                    const { data } = await axios.post(
+                        `${backendUrl}/api/user/verifyPayment`,
+                        {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            receipt: order.receipt // Add this to help with appointment identification
+                        },
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                utoken: token
+                            }
+                        }
+                    );
+
+                    if (data.success) {
+                        toast.success('Payment successful!');
+                        await getAppointments();
+                    } else {
+                        toast.error(data.message || 'Payment verification failed');
+                    }
+                } catch (error) {
+                    console.error('Payment verification error:', error);
+                    toast.error(error.response?.data?.message || 'Payment verification failed');
+                } finally {
+                    setIsProcessing(false);
+                }
+            },
+            prefill: {
+                name: "Patient",
+                email: "patient@example.com"
+            },
+            theme: {
+                color: "#3B82F6"
+            }
+        };
+
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+    };
+
+    const appointmentRazorPay = async (appointmentId) => {
+        try {
+            setIsProcessing(true);
+            const { data } = await axios.post(
+                `${backendUrl}/api/user/payment-razorpay`,
+                { appointmentId },
+                {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        utoken: token
+                    }
+                }
+            );
+            if (data.success) {
+                initPayment(data.order);
+            } else {
+                toast.error(data.message || 'Failed to initiate payment');
+            }
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to initiate payment');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -36,7 +150,7 @@ const MyAppointments = () => {
         if (token) {
             getAppointments();
         }
-    }, [token, backendUrl]); // Added backendUrl to dependencies
+    }, [token, backendUrl]);
 
     const formatDate = (dateString) => {
         return dateString.split("_").join("-");
@@ -67,7 +181,6 @@ const MyAppointments = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold mb-6">My Appointments</h1>
-
             <div className="space-y-4">
                 {appointments.map((appointment, index) => (
                     <div
@@ -94,56 +207,36 @@ const MyAppointments = () => {
                                     {appointment.docData?.specialization || 'Specialization Not Available'}
                                 </p>
                                 <div className="flex items-center gap-2 text-gray-600">
-                                    <Calendar className="w-4 h-4" />
+                                    <Calendar className="w-4 h-4"/>
                                     <span>Date: {formatDate(appointment.slotDate)}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-gray-600">
-                                    <Clock className="w-4 h-4" />
+                                    <Clock className="w-4 h-4"/>
                                     <span>Time: {appointment.slotTime}</span>
                                 </div>
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2 text-gray-600">
-                                        <MapPin className="w-4 h-4" />
-                                        <span className="font-medium">Address</span>
-                                    </div>
-                                    <p className="text-gray-600 pl-6">
-                                        {appointment.docData?.address?.line1 || 'Address Not Available'}
-                                    </p>
-                                    <p className="text-gray-600 pl-6">
-                                        {appointment.docData?.address?.line2}
-                                    </p>
-                                </div>
-                                {appointment.status && (
-                                    <p className={`font-medium ${
-                                        appointment.status === 'confirmed' ? 'text-green-600' :
-                                            appointment.status === 'cancelled' ? 'text-red-600' :
-                                                'text-yellow-600'
-                                    }`}>
-                                        Status: {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
-                                    </p>
-                                )}
+                                <p className={`font-medium ${appointment.cancelled ? 'text-red-600' : 'text-green-600'}`}>
+                                    Status: {appointment.cancelled ? 'Cancelled' : 'Confirmed'}
+                                </p>
+                                <p className="font-medium text-gray-600">
+                                    Payment Status: {appointment.payload ? 'Paid' : 'Pending'}
+                                </p>
                             </div>
-
                             <div className="w-full md:w-auto flex flex-col gap-3 mt-4 md:mt-0">
-                                {appointment.status !== 'cancelled' && (
+                                {!appointment.cancelled && (
                                     <>
-                                        {!appointment.paid && (
+                                        {!appointment.payload && (
                                             <button
                                                 className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                                                onClick={() => {
-                                                    // Add payment handler here
-                                                    console.log('Payment clicked for appointment:', appointment._id);
-                                                }}
+                                                onClick={() => appointmentRazorPay(appointment._id)}
+                                                disabled={isProcessing}
                                             >
                                                 Pay ₹{appointment.amount}
                                             </button>
                                         )}
                                         <button
                                             className="border border-red-500 text-red-500 px-6 py-2 rounded-lg hover:bg-red-50 transition-colors"
-                                            onClick={() => {
-                                                // Add cancel handler here
-                                                console.log('Cancel clicked for appointment:', appointment._id);
-                                            }}
+                                            onClick={() => cancelAppointment(appointment._id)}
+                                            disabled={isProcessing}
                                         >
                                             Cancel appointment
                                         </button>
