@@ -7,7 +7,7 @@ const AdminContextProvider = (props) => {
     const [token,setToken] = useState(localStorage.getItem('token') || '');
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
     const [doctors, setDoctors] = useState([]);
-
+    const [appointments, setAppointments] = useState([]);
     const getAllDoctors = async () => {
         try {
             const { data } = await axios.post(backendUrl + '/api/admin/all-doctors', {}, {
@@ -47,14 +47,61 @@ const AdminContextProvider = (props) => {
             throw e;
         }
     }
+    const getAllAppointments = async () => {
+        try{
+            const {data} = await axios.get(backendUrl + '/api/admin/all-appointments',{
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            console.log('Appointments fetched:', data);
+            console.log("Appointments set in context:", data.appointments);
+            if(data.success) {
+                setAppointments(data.appointments);
+            }else{
+                toast.error(data.message);
+            }
+        }catch (e) {
+            console.log(e);
+            toast.error(e.response?.data?.message || e.message);
+        }
+    }
+    const cancelAppointment = async (appointmentId) => {
+        try {
+            const { data } = await axios.post(backendUrl + '/api/admin/cancel-appointment',
+                { appointmentId },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
+            if (data.success) {
+                await getAllAppointments(); // Refresh appointments list
+                toast.success('Appointment cancelled successfully');
+                return true;
+            } else {
+                toast.error(data.message);
+                return false;
+            }
+        } catch (e) {
+            toast.error(e.response?.data?.message || e.message);
+            return false;
+        }
+    };
     const value = {
         token,
         setToken,
         backendUrl,
         doctors,
         getAllDoctors,
-        changeAvailability
+        changeAvailability,
+        getAllAppointments,
+        appointments,
+        cancelAppointment
     }
 
     return (

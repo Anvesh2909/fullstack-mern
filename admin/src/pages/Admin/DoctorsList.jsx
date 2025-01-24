@@ -12,7 +12,6 @@ const DoctorsList = () => {
             getAllDoctors();
         }
     }, [token]);
-
     const handleAvailabilityChange = async (doctorId) => {
         setLoading(true);
         setUpdatingDoctorId(doctorId);

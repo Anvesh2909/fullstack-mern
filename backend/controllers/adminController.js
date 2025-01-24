@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import {v2 as cloudinary} from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
+import appointmentModel from "../models/appointmentModel.js";
 
 //add doctor
 const addDoctor = async (req, res) => {
@@ -93,4 +94,54 @@ const allDoctors = async (req,res)=>{
         res.json({success:false,message:e.message})
     }
 }
-export {addDoctor,loginAdmin,allDoctors};
+const allAppointments = async (req,res)=>{
+    try{
+        const appointments = await appointmentModel.find({});
+        res.json({success:true,appointments});
+    }catch (e){
+        console.log(e);
+        res.json({success:false,message:e.message})
+    }
+}
+const appointmentCancel = async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+
+        if (!appointmentId) {
+            return res.status(400).json({
+                success: false,
+                message: "Appointment ID is required"
+            });
+        }
+
+        const appointmentData = await appointmentModel.findById(appointmentId);
+
+        if (!appointmentData) {
+            return res.status(404).json({
+                success: false,
+                message: "Appointment not found"
+            });
+        }
+        await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true });
+        const { docId, slotDate, slotTime } = appointmentData;
+        const doctorData = await doctorModel.findById(docId);
+        let slots_booked = doctorData.slots_booked;
+        slots_booked[slotDate] = slots_booked[slotDate].filter((time) => time !== slotTime);
+
+        await doctorModel.findByIdAndUpdate(docId, { slots_booked }, { new: true });
+
+        res.status(200).json({
+            success: true,
+            message: "Appointment cancelled successfully by admin"
+        });
+
+    } catch (error) {
+        console.error('Admin appointment cancellation error:', error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to cancel appointment",
+            error: error.message
+        });
+    }
+};
+export {addDoctor,loginAdmin,allDoctors,allAppointments,appointmentCancel};
