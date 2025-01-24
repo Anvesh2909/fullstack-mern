@@ -4,8 +4,8 @@ import {v2 as cloudinary} from "cloudinary";
 import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
 import appointmentModel from "../models/appointmentModel.js";
+import userModel from "../models/userModel.js";
 
-//add doctor
 const addDoctor = async (req, res) => {
     try {
         const {name, email, password, speciality, degree, experience, about, fees, address} = req.body;
@@ -91,7 +91,7 @@ const allDoctors = async (req,res)=>{
         res.json({success:true,doctors});
     }catch (e){
         console.log(e);
-        res.json({success:false,message:e.message})
+        res.json({success:false,message:e.message});
     }
 }
 const allAppointments = async (req,res)=>{
@@ -100,7 +100,7 @@ const allAppointments = async (req,res)=>{
         res.json({success:true,appointments});
     }catch (e){
         console.log(e);
-        res.json({success:false,message:e.message})
+        res.json({success:false,message:e.message});
     }
 }
 const appointmentCancel = async (req, res) => {
@@ -144,4 +144,22 @@ const appointmentCancel = async (req, res) => {
         });
     }
 };
-export {addDoctor,loginAdmin,allDoctors,allAppointments,appointmentCancel};
+const dashboard = async (req, res) => {
+    try{
+        const doctors = await doctorModel.find({});
+        const users = await userModel.find({});
+        const appointments = await appointmentModel.find({});
+        const dashData = {
+            doctors: doctors.length,
+            users: users.length,
+            appointments: appointments.length,
+            latestAppointments: appointments.reverse().slice(0,5)
+        }
+        res.json({success:true,dashData});
+
+    }catch (e) {
+        console.log(e);
+        res.json({success:false,message:e.message})
+    }
+}
+export {addDoctor,loginAdmin,allDoctors,allAppointments,appointmentCancel,dashboard};
