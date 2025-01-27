@@ -85,7 +85,7 @@ const MyAppointments = () => {
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_signature: response.razorpay_signature,
-                            receipt: order.receipt // Add this to help with appointment identification
+                            receipt: order.receipt
                         },
                         {
                             headers: {
@@ -214,15 +214,21 @@ const MyAppointments = () => {
                                     <Clock className="w-4 h-4"/>
                                     <span>Time: {appointment.slotTime}</span>
                                 </div>
-                                <p className={`font-medium ${appointment.cancelled ? 'text-red-600' : 'text-green-600'}`}>
-                                    Status: {appointment.cancelled ? 'Cancelled' : 'Confirmed'}
-                                </p>
+                                {appointment.isCompleted ? (
+                                    <p className="font-medium text-green-600">
+                                        Status: Completed
+                                    </p>
+                                ) : (
+                                    <p className={`font-medium ${appointment.cancelled ? 'text-red-600' : 'text-green-600'}`}>
+                                        Status: {appointment.cancelled ? 'Cancelled' : 'Confirmed'}
+                                    </p>
+                                )}
                                 <p className="font-medium text-gray-600">
                                     Payment Status: {appointment.payload ? 'Paid' : 'Pending'}
                                 </p>
                             </div>
                             <div className="w-full md:w-auto flex flex-col gap-3 mt-4 md:mt-0">
-                                {!appointment.cancelled && (
+                                {!appointment.isCompleted && !appointment.cancelled && (
                                     <>
                                         {!appointment.payload && (
                                             <button

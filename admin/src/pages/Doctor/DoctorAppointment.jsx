@@ -12,6 +12,7 @@ const DoctorAppointment = () => {
     useEffect(() => {
         if (dToken) {
             getAppointments();
+            calculateAge();
         }
     }, [dToken]);
 

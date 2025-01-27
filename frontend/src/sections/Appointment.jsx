@@ -255,5 +255,4 @@ const Appointment = () => {
         </div>
     );
 };
-
 export default Appointment;
