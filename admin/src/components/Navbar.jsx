@@ -1,22 +1,28 @@
-import { useContext } from 'react';
+import { useContext } from "react";
 import { AdminContext } from "../context/AdminContext.jsx";
+import { DoctorContext } from "../context/DoctorContext.jsx";
 import { assets } from "../assets/assets.js";
-import { LogOut, Menu } from 'lucide-react';
+import { LogOut, Menu } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
     const { token, setToken } = useContext(AdminContext);
+    const { dToken, setDToken } = useContext(DoctorContext);
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        setToken(null);
-        localStorage.removeItem('token');
-        localStorage.removeItem('userType');
-        navigate('/');
+        if (token) {
+            setToken(null);
+        } else if (dToken) {
+            setDToken(null);
+        }
+        localStorage.removeItem("token");
+        localStorage.removeItem("doctorToken");
+        localStorage.removeItem("userType");
+        navigate("/");
     };
 
     const handleMenuClick = () => {
-
     };
 
     return (
@@ -30,7 +36,7 @@ const Navbar = () => {
                             className="h-8 w-auto"
                         />
                         <p className="text-sm font-medium text-gray-600 bg-gray-100 rounded-full px-3 py-0.5">
-                            {token ? 'Admin' : 'Doctor'}
+                            {token ? "Admin" : dToken ? "Doctor" : ""}
                         </p>
                     </div>
                     <button
@@ -55,4 +61,5 @@ const Navbar = () => {
         </nav>
     );
 };
+
 export default Navbar;

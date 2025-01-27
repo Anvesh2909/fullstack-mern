@@ -118,17 +118,12 @@ const DoctorContextProvider = (props) => {
 
     const updateDoctorProfile = async (profileData) => {
         try {
-            const { data } = await axios.put(
-                `${backendUrl}/api/doctor/update-profile`,
-                profileData,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${dToken}`,
-                        'Content-Type': 'multipart/form-data'
-                    }
+            const { data } = await axios.put(`${backendUrl}/api/doctor/update-profile`, profileData, {
+                headers: {
+                    'Authorization': `Bearer ${dToken}`,
+                    'Content-Type': 'application/json'
                 }
-            );
-
+            });
             if (data.success) {
                 setDoctorProfile(data.doctor);
                 toast.success(data.message);
@@ -141,7 +136,7 @@ const DoctorContextProvider = (props) => {
             toast.error(e.response?.data?.message || e.message);
             return null;
         }
-    };
+    }
 
     const value = {
         backendUrl,

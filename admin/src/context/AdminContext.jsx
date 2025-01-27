@@ -81,7 +81,7 @@ const AdminContextProvider = (props) => {
             );
 
             if (data.success) {
-                await getAllAppointments(); // Refresh appointments list
+                await getAllAppointments();
                 toast.success('Appointment cancelled successfully');
                 return true;
             } else {

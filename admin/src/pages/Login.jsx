@@ -3,6 +3,8 @@ import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { AdminContext } from "../context/AdminContext.jsx";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { DoctorContext } from "../context/DoctorContext.jsx";
+
 const Login = () => {
     const [state, setState] = useState("Admin");
     const [email, setEmail] = useState("");
@@ -10,7 +12,9 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-    const { setToken, backendUrl,token } = useContext(AdminContext);
+
+    const { setToken, backendUrl} = useContext(AdminContext);
+    const { setDToken} = useContext(DoctorContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -21,28 +25,30 @@ const Login = () => {
                 state === "Admin"
                     ? `${backendUrl}/api/admin/login`
                     : `${backendUrl}/api/doctor/login`;
-
             const response = await axios.post(endpoint, { email, password });
             const { data } = response;
+
             if (data.success) {
-                setToken(data.token);
-                localStorage.setItem("userType", state.toLowerCase());
-                localStorage.setItem("token", data.token);
+                if (state === "Admin") {
+                    setToken(data.token);
+                    localStorage.setItem("token", data.token);
+                } else if (state === "Doctor") {
+                    setDToken(data.token);
+                    localStorage.setItem("dToken", data.token);
+                }
+                toast.success(`${state} logged in successfully!`);
             } else {
-                console.log(data.message);
                 toast.error(data.message);
             }
-            console.log('Stored token:', localStorage.getItem('token'));
-            console.log('Context token:', token); // from AdminContext
         } catch (err) {
             const errorMessage =
                 err.response?.data?.message || "An error occurred. Please try again.";
             setError(errorMessage);
-            console.error("Login error:", err);
         } finally {
             setIsLoading(false);
         }
     };
+
     return (
         <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
@@ -63,7 +69,6 @@ const Login = () => {
                     )}
 
                     <div className="space-y-4">
-                        {/* Email Input */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Email
@@ -83,7 +88,6 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* Password Input */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Password
@@ -115,7 +119,6 @@ const Login = () => {
                         </div>
                     </div>
 
-                    {/* Submit and Toggle Buttons */}
                     <div className="space-y-4">
                         <button
                             type="submit"
@@ -165,4 +168,5 @@ const Login = () => {
         </div>
     );
 };
+
 export default Login;
