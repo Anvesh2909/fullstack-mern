@@ -124,21 +124,21 @@ const DoctorContextProvider = (props) => {
                 {
                     headers: {
                         'Authorization': `Bearer ${dToken}`,
-                        'Content-Type': 'multipart/form-data'
+                        'Content-Type': 'application/json'
                     }
                 }
             );
 
             if (data.success) {
                 setDoctorProfile(data.doctor);
-                toast.success(data.message);
                 return data.doctor;
             } else {
                 toast.error(data.message);
                 return null;
             }
         } catch (e) {
-            toast.error(e.response?.data?.message || e.message);
+            console.error("Error updating doctor profile:", e.response?.data || e.message);
+            toast.error(e.response?.data?.message || "Error updating doctor profile");
             return null;
         }
     };

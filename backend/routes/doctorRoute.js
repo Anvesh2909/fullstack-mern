@@ -16,5 +16,5 @@ doctorRouter.post('/complete-appointment',authDoctor,appointmentComplete);
 doctorRouter.post('/cancel-appointment',authDoctor,appointmentCancel);
 doctorRouter.get('/dashboard',authDoctor,doctorDashboard);
 doctorRouter.get('/get-profile',authDoctor,getDoctorProfile);
-doctorRouter.post('/update-profile',authDoctor,upload.single('image'),updateDoctorProfile);
+doctorRouter.put('/update-profile',authDoctor,upload.single('image'),updateDoctorProfile);
 export default doctorRouter;

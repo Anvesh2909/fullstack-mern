@@ -2,6 +2,7 @@ import doctorModel from "../models/doctorModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import appointmentModel from "../models/appointmentModel.js";
+import cloudinary from "../config/cloudinary.js";
 
 const changeAvailability = async (req, res) => {
     try {
@@ -163,12 +164,10 @@ const getDoctorProfile = async (req, res) => {
     }
 }
 
-const  updateDoctorProfile = async (req, res) => {
+const updateDoctorProfile = async (req, res) => {
     try {
-        const doctorId = req.doctor._id;
+        const doctorId = req.body.docId;
         const updateData = { ...req.body };
-
-        // Handle image upload to cloudinary
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: 'doctor_profiles',
@@ -198,7 +197,7 @@ const  updateDoctorProfile = async (req, res) => {
             doctor
         });
     } catch (error) {
-        console.error(error);
+        console.error("Backend error:", error);
         res.status(500).json({
             success: false,
             message: "Error updating doctor profile",
