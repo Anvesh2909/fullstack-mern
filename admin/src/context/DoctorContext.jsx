@@ -166,5 +166,4 @@ const DoctorContextProvider = (props) => {
         </DoctorContext.Provider>
     );
 };
-
 export default DoctorContextProvider;
