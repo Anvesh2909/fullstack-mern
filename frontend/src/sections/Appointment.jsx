@@ -5,6 +5,7 @@ import { assets } from "../assets/assets_frontend/assets.js";
 import RelatedDoctors from "../components/RelatedDoctors.jsx";
 import {toast} from "react-toastify";
 import axios from "axios";
+
 const Appointment = () => {
     const { docId } = useParams();
     const { doctors,token,backendUrl,getDoctorData } = useContext(AppContext);
@@ -20,6 +21,7 @@ const Appointment = () => {
         const doc = doctors.find((doctor) => doctor._id === docId);
         setDocInfo(doc || null);
     };
+
     const bookAppointment = async () => {
         if (!token) {
             toast.warn('Login to book an appointment');
@@ -143,6 +145,20 @@ const Appointment = () => {
         date: date.getDate(),
     });
 
+    // Function to find next available date with slots
+    const findNextAvailableDate = (currentDate) => {
+        const dateSlots = generateDateSlots();
+        for (const date of dateSlots) {
+            const slotsForDate = docSlots.filter(
+                slot => slot.date === date.toISOString().split("T")[0]
+            );
+            if (slotsForDate.length > 0) {
+                return date;
+            }
+        }
+        return null; // No available slots in the next 7 days
+    };
+
     useEffect(() => {
         fetchDoctor();
     }, [doctors, docId]);
@@ -150,6 +166,25 @@ const Appointment = () => {
     useEffect(() => {
         getAvailableSlots();
     }, [docInfo]);
+
+    // Effect to handle no slots on selected date
+    useEffect(() => {
+        if (!loadingSlots && selectedDate) {
+            const slotsForSelectedDate = docSlots.filter(
+                slot => slot.date === selectedDate.toISOString().split("T")[0]
+            );
+
+            if (slotsForSelectedDate.length === 0) {
+                const nextAvailableDate = findNextAvailableDate(selectedDate);
+                if (nextAvailableDate) {
+                    toast.info('No slots available on selected date. Showing next available date.');
+                    setSelectedDate(nextAvailableDate);
+                } else {
+                    toast.warn('No slots available in the next 7 days.');
+                }
+            }
+        }
+    }, [selectedDate, docSlots, loadingSlots]);
 
     if (!docInfo) {
         return (
@@ -197,6 +232,9 @@ const Appointment = () => {
                     {generateDateSlots().map((date, index) => {
                         const { day, date: dateNum } = formatDate(date);
                         const isSelected = selectedDate.toDateString() === date.toDateString();
+                        const hasSlots = docSlots.some(
+                            slot => slot.date === date.toISOString().split("T")[0]
+                        );
 
                         return (
                             <button
@@ -205,11 +243,17 @@ const Appointment = () => {
                                 className={`flex flex-col items-center min-w-[80px] p-4 rounded-full transition-colors ${
                                     isSelected
                                         ? "bg-primary text-white"
-                                        : "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                        : hasSlots
+                                            ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
                                 }`}
+                                disabled={!hasSlots}
                             >
                                 <span className="text-sm font-medium">{day}</span>
                                 <span className="text-lg font-bold">{dateNum}</span>
+                                {!hasSlots && (
+                                    <span className="text-xs mt-1">No slots</span>
+                                )}
                             </button>
                         );
                     })}
@@ -243,10 +287,19 @@ const Appointment = () => {
             </div>
 
             <div className="flex mt-8">
-                <button onClick={bookAppointment} className="bg-primary text-white px-6 py-3 rounded-full shadow-md hover:shadow-lg transition-transform transform hover:scale-105">
+                <button
+                    onClick={bookAppointment}
+                    disabled={!selectedSlot}
+                    className={`px-6 py-3 rounded-full shadow-md transition-transform transform hover:scale-105 ${
+                        selectedSlot
+                            ? "bg-primary text-white hover:shadow-lg"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                >
                     Book Appointment
                 </button>
             </div>
+
             <div className="flex flex-col mt-8">
                 <p className="text-xl text-center font-bold text-gray-800 mb-4 justify-center">Related Doctors</p>
                 <p className="text-center">Simply Browse through our extensive list of trusted doctors.</p>
@@ -255,4 +308,5 @@ const Appointment = () => {
         </div>
     );
 };
+
 export default Appointment;
