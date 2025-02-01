@@ -140,7 +140,6 @@ const Dashboard = () => {
     );
 };
 
-// Stat Card Component
 const StatCard = ({ icon, title, value, color }) => (
     <div className={`${color} rounded-lg shadow-md p-6 flex items-center space-x-4`}>
         <div className="bg-white p-3 rounded-full">{icon}</div>

@@ -99,7 +99,6 @@ const Appointment = () => {
         for (let i = 0; i < 7; i++) {
             const currentDate = new Date(today);
             currentDate.setDate(today.getDate() + i);
-
             const startTime = new Date(currentDate);
             if (i === 0) {
                 const currentHour = today.getHours();
@@ -308,5 +307,4 @@ const Appointment = () => {
         </div>
     );
 };
-
 export default Appointment;
