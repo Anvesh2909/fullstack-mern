@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  web:
+    depends_on:
+      - api
+    build: ./frontend
+    ports:
+      - 5173:5173
+    env_file:
+      - ./frontend/.env
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+  admin:
+    depends_on:
+      - api
+    build: ./admin
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./admin/.env
+    volumes:
+      - ./admin:/app
+      - /app/node_modules
+
+  api:
+    depends_on:
+      - db
+    build: ./backend
+    ports:
+      - 9000:9000 # Fixed port
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  db:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - prescripto:/data/db
+
+volumes:
+  prescripto:
