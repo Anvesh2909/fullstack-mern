@@ -13,11 +13,14 @@ const Footer = () => {
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr_1fr] gap-12 py-12">
                     <div className="space-y-6">
-                        <img
-                            className="w-44 h-auto transition-transform hover:scale-105"
-                            src={assets.logo}
-                            alt="Prescripto Logo"
-                        />
+                        <div className="flex gap-4">
+                            <img
+                                className="w-12 h-auto transition-transform hover:scale-105"
+                                src={assets.logo}
+                                alt="Prescripto Logo"
+                            />
+                            <h1 className="text-2xl font-bold text-gray-800">VHealth</h1>
+                        </div>
                         <p className="text-gray-600 leading-relaxed max-w-md">
                             Prescripto simplifies healthcare by streamlining appointment booking with trusted doctors.
                             Find, book, and manage your consultations effortlessly. Your health is our priority—connecting
@@ -79,7 +82,7 @@ const Footer = () => {
                 </div>
                 <div className="border-t border-gray-200" />
                 <div className="py-6 text-center text-sm text-gray-600">
-                    <p>Copyright © {currentYear} Prescripto. All rights reserved.</p>
+                    <p>Copyright © {currentYear} VHealth. All rights reserved.</p>
                 </div>
             </div>
         </footer>

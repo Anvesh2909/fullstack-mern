@@ -47,7 +47,7 @@ const Navbar = () => {
                 <img
                     src={assets.logo}
                     alt="logo"
-                    className="w-32 md:w-44 cursor-pointer"
+                    className="w-32 md:w-12 cursor-pointer"
                     onClick={() => navigate('/')}
                 />
                 <ul className="gap-5 items-start font-medium hidden md:flex">
